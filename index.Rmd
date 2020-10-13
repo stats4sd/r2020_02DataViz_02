@@ -1,0 +1,298 @@
+---
+title: "Making Graphs in R Using ggplot2: Part 2"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+    df_print: default
+runtime: shiny_prerendered
+description: >
+  Learn about the basic syntax of R.
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(ggplot2)
+tutorial_options(exercise.timelimit = 10)
+Pulse<-readRDS("Pulse.RDS")
+
+```
+
+
+## Colours  
+
+[EMBED VIDEO 2]
+
+Lets start by adding colours to the scatter plot we were just making. We have two different ways we can apply colours to a scatterplot - either:  
+a) make all of the points the same colour. 
+b) Or we can set the points to be different colours based on a column in the data.  
+Option a) involves changing the colour through the geometry; option b) will require us to change colours through adding an aesthetic.
+
+Let's look at option a) first, and make all of our points red:
+
+```{r colour1,exercise=TRUE}
+ggplot(data = Pulse,  aes(x = Age,y=Attractiveness)) + 
+  geom_point(colour="red")
+```
+
+If we are just adding colours superficially to make our plot look nicer, this is one way to achieve it. We could use the  <a href="http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf" target="_blank">the R colour chart</a> to pick out a nice shade to help our points look good.
+
+But we can add to the information being displayed by setting the colour of points to vary by a third column - for example gender. 
+
+```{r colour2,exercise=TRUE}
+ggplot(data = Pulse,  aes(x = Age,y=Attractiveness,colour=Gender)) + 
+  geom_point()
+```
+
+In this case we can see colours being automatically assigned to each of the unique values of the column we have mapping to the `colour` aesthetic. This will help us to now visualise the relationship between three variables from our data on the same plot.
+
+However there are lots of ways to get this wrong, and in particular through mixing up these two different ways of assigning the colours. In the video above I illustrate this example of what happens if you specify a colour name in the aesthetic or specify a variable in the geometry.
+You can run examples of this below - make sure you don't fall into these traps!
+
+```{r bluered1,exercise=TRUE}
+
+ggplot(data = Pulse,  aes(x = Age,y=Attractiveness,colour="blue")) + 
+  geom_point()
+```
+
+
+```{r bluered2,exercise=TRUE,error=TRUE}
+
+ggplot(data = Pulse,  aes(x = Age,y=Attractiveness)) + 
+  geom_point(colour=Gender)
+```
+
+Remember that both of those examples are wrong!
+
+## Fill
+
+When dealing with bar charts or boxplots in particular, and some other geometries as well, there are actually two different colour assignments that you need to be aware of. The colour aesthetic still works, as does setting the colour within the geometry.
+
+```{r fill1, exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,colour=AgeGrp)) + 
+  geom_boxplot()
+```
+
+```{r fill2, exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp)) + 
+  geom_boxplot(colour="blue")
+```
+
+But you will notice that this affects the points and lines of the box, but not the internal colour. So to change that attribute we would use `fill` instead of `colour`.
+
+```{r fill3, exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()
+```
+
+Similarly we could set a single colour for all boxes by using setting the `fill` colour within the `geom_boxplot` line of code.
+
+
+
+*QUESTION: In the chunk below write the R code to produce a histogram of income from the Pulse dataset, and have it shaded in green. Then investigate what happens within geom_histogram if you map a categorical variable, like Gender, to either the colour or fill aesthetic*
+
+```{r shadehist,exercise=TRUE}
+
+```
+
+```{r shadehist-solution}
+ggplot(data=Pulse,aes(x=Income))+
+  geom_histogram(fill="green")
+
+#second plot - setting fill = gender gives us overlapping histograms with different colours. Can be useful for comparing distributions, but a little confusing, because the genders are stacked on top of each other so comparing is not easy. We will learn how to separate this out a little bit later in the course.
+ggplot(data=Pulse,aes(x=Income,fill=Gender))+
+  geom_histogram()
+```
+
+## Scales  
+
+Lets go back to our boxplots of income by age group from the previous section.
+
+```{r}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()
+```
+
+Scales are useful to apply to modify the properties of how the aesthetics get turned into the plot. Scales modify the aesthetics. All scale functions are of the same generic format scale_*aesthetic*_*modifier*. 
+
+Income is a notoriously fickle variable, a small number of people earn a very large amount of money, which means about 90% of our data is squashed into the bottom of the graph making it hard to compare across groups and meaning we are not making good use of all the space on our plot. So we might want to apply a log scale for income. Using the log10 scale modifier to the y axis then works like this.
+
+```{r scal1,exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()+
+    scale_y_log10()
+```
+
+This really helps us to see the differences in income by age which weren't clear before, and makes the graph look much better due to a more appropriate use of space!
+
+
+A similar principle applies to colours as well - so if we want to set the colours for our age groups instead of relying on the R defaults this would also be through an additional call to scale. There is a number of different modifiers available for `fill` or `colour` aesthetics - a simple one would be the `manual` modifier which lets us specify exactly what colours to use.
+
+
+```{r scale2,exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()+
+    scale_y_log10()+
+      scale_fill_manual(values=c("red","orange","yellow","green","blue","purple"))
+```
+
+Here you need to make sure that:  
+a) you have the correct number of colours, 1 for each group. Remember to use the `c()` function to combine the colours together, and to use a comma between each colour  
+b) the names are all a colours in R and that you have quotation marks correctly placed around all of them.
+
+R has some strange colours built in by name.
+
+So for example this is possible:
+
+```{r scale3, exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()+
+    scale_y_log10()+
+      scale_fill_manual(values=c("red","orange","yellow","green","blue","blanchedalmond"))
+```
+
+But this will give an error.
+
+```{r itsmakingmeblue,error=TRUE, exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()+
+    scale_y_log10()+
+      scale_fill_manual(values=c("red","orange","yellow","green","blue","pantone292"))
+```
+
+As a reminder,
+ <a href="http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf" target="_blank">the R colour chart</a> can help here.
+
+**QUESTION Using the  <a href="http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf" target="_blank">the R colour chart</a> for reference, pick out some colours and modify the code**
+```{r colour3, exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()+
+    scale_y_log10()+
+      scale_fill_manual(values=c("red","orange","yellow","green","blue","purple"))
+```
+
+```{r colour3-solution}
+#The answer here is entirely up to you for how you pick out the colours! Here is one option
+
+
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()+
+    scale_y_log10()+
+      scale_fill_manual(values=c("blanchedalmond","goldenrod2","gray50","forestgreen","lightsalmon","hotpink"))
+```
+
+
+One of the other useful modifiers for colours is `brewer`. Instead of picking out individual colours for each value you pick out a pre-existing colour palette. You can see the colour palettes available 
+ <a href="https://colorbrewer2.org/" target="_blank">here</a>. The palette names in R correspond to the 'scheme' names on that website which you can see in the URL when you choose a palette. 
+
+As mentioned in the video, I really like the "Dark2" palette for its bold colours, which are clearly distinguishable. Although a lot of colour choice comes down to specific applications or personal preference.
+
+```{r colour4, exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) + 
+  geom_boxplot()+
+    scale_y_log10()+
+      scale_fill_brewer(palette="Dark2")
+```
+
+
+**QUESTION: Using everything you have learnt so far: in the code chunk below make an (informative) chart showing the relationship between support for Donald Trump `ApproveTrump` and how physically attractive someone considers themselves, `Attractiveness`. Make sure that you choose a sensible geometry, and make use of colours**
+
+```{r trumphot, exercise=TRUE,error=TRUE}
+ggplot(data=X,aes(y=Y,x=X))+
+  geom_something()
+
+```
+
+## Layers
+
+ggplot2 graphs can have make graphs with multiple geometries layered on top of each other, providing the aesthetics for those geometries are the same.
+
+Let's go back to the scatter plot we made earlier about age and attractiveness
+
+```{r layer1,exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Attractiveness,x=Age)) + 
+  geom_point()
+```
+
+We couldn't really decide earlier if there was a relationship between these two variables - it didn't really seem like there was. But we can add a "line of best fit" onto the plot using `geom_smooth` - by default this fits a smoothing function onto the plot, which will help us to determine whether or not there is a relationship, and whether this relationship is likely to be linear, or more complicated. 
+
+In ggplots we can simply add more layers to a graph by continuing to add a `+` at the end of each layer. 
+```{r layer2,exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Attractiveness,x=Age)) + 
+  geom_point()+
+    geom_smooth()
+```
+
+The shaded area around the line represents a 95% confidence interval around the trend being plotted.
+The ordering of the layers determines what will appear on top; look at the difference if we reverse the order of `geom_point()` and `geom_smooth()`.
+
+
+```{r layer3,exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Attractiveness,x=Age)) + 
+ geom_smooth()+
+  geom_point()
+```
+
+If you are struggling to spot the difference - look closely at where the points intersect with the line.
+
+This example of layering works because geom_smooth and geom_point both have the same required aesthetics - a numeric variable mapped to `x` and a numeric variable mapped to `y`. If we tried to add, for example, a boxplot on top then we would receive a slightly strange looking plot, and a warning message since the aesthetics for boxplot are not completely compatible. 
+
+```{r layer4,exercise=TRUE}
+ggplot(data = Pulse,  aes(y = Attractiveness,x=Age)) + 
+ geom_point()+
+  geom_boxplot()
+```
+
+Because the `x` aesthetic is optional for `geom_boxplot` this example chooses to ignore the incompatible variable (Age) being plotted on that axis and just draws a single boxplot. This is probably not going to give us a useful graph!
+
+If we tried to layer `geom_bar` then we would get an error, since the aesthetics needed for `geom_bar` would be incompatible with the aesthetics we have for `geom_point`.
+
+```{r layer5,exercise=TRUE,error=TRUE}
+ggplot(data = Pulse,  aes(y = Attractiveness,x=Age)) + 
+ geom_point()+
+  geom_bar()
+```
+
+## Appendix: 'Pulse' dataset 
+
+The data we are using in this session is an extract of a survey conducted in the US in June 2018, as part of the Pulse of the Nation series of surveys. This survey was a representative sample of the American population. You can read more about the survey (and others from the same series) <a href="https://thepulseofthenation.com" target="_blank">here</a>. The data has been cleaned and edited slightly for use in this course.
+
+The dataset contains an extract of 356 responses to 10 of the survey questions, and has been imported to R as a data frame called `Pulse`.
+
+A summary of the columns in the dataset is below.
+
+```{r, echo=FALSE,message=FALSE,warning=FALSE}
+library(tidyverse)
+library(knitr)
+
+data.frame(Column=c("Gender","Age","AgeGrp","Race","Income","Education","PoliticalParty","PoliticalView","ApproveTrump","Attractiveness"),
+           Description=c("What gender do you identify with?","What is your age?","Age range","What is your race?",
+                         "About how much money do you make per year? (USD)","What is your highest level of education?",
+                         "In politics today, do you consider yourself a Democrat, a Republican, or Independent?",
+                         "Would you say you are liberal, conservative, or moderate?",
+                         "Do you approve, disapprove, or neither approve nor disapprove of how Donald Trump is handling his job as president?",
+                        "On a scale of 1-10, how physically attractive do you consider yourself?")) %>% kable()
+
+```
+
+
+```{r,echo=FALSE}
+DT::datatable(Pulse)
+```
+
+(You can use the arrow keys on your keyboard to scroll right in case the data table does not fit entirely on your screen)
+
+## Appendix: Useful reference links  
+
+R Graphics Cookbook: <a href="http://www.cookbook-r.com/Graphs/" target="_blank">http://www.cookbook-r.com/Graphs/</a> 
+
+ggplot2 CheatSheet:<a href="https://rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf" target="_blank">https://rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf   </a>  
+
+R Color Chart: <a href="http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf" target="_blank">http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf     </a>   
+
+ggplot2 manuals (warning - technical and slightly pretentious. First line "ggplot2... embodies a deep philosophy of visualisation"): <a href="https://ggplot2.tidyverse.org/" target="_blank">https://ggplot2.tidyverse.org/     </a>     
+
+Plotting with ggplot - Roger Peng videos:
+<a href="https://www.youtube.com/watch?v=HeqHMM4ziXA" target="_blank">Part 1    </a>  
+<a href="https://www.youtube.com/watch?v=n8kYa9vu1l8" target="_blank">Part 2 </a>  
+
