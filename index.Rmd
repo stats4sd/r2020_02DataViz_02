@@ -21,7 +21,7 @@ Pulse<-readRDS("Pulse.RDS")
 
 ## Colours  
 
-[EMBED VIDEO 2]
+![](https://youtu.be/-ibuoSs6AoA)
 
 Lets start by adding colours to the scatter plot we were just making. We have two different ways we can apply colours to a scatterplot - either:  
 a) make all of the points the same colour. 
