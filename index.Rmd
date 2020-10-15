@@ -138,7 +138,7 @@ ggplot(data = Pulse,  aes(y = Income,x=AgeGrp,fill=AgeGrp)) +
 
 Here you need to make sure that:  
 a) you have the correct number of colours, 1 for each group. Remember to use the `c()` function to combine the colours together, and to use a comma between each colour  
-b) the names are all a colours in R and that you have quotation marks correctly placed around all of them.
+b) the names are all colours in R and that you have quotation marks correctly placed around all of them.
 
 R has some strange colours built in by name.
 
